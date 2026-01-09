@@ -31,6 +31,17 @@ export default function RootLayout({
         <AuthProvider>
           {children}
         </AuthProvider>
+        <footer className="w-full py-6 bg-black border-t border-white/10 text-center text-sm text-gray-500 z-50">
+          Created by{" "}
+          <a
+            href="https://snehil133portfolio.vercel.app/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-primary hover:underline font-medium transition-colors"
+          >
+            Snehil Gupta
+          </a>
+        </footer>
       </body>
     </html>
   );
