@@ -4,6 +4,8 @@ import React from "react";
 import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 
+import { formatDate } from "@/lib/utils";
+
 export default function CertificatePage() {
     return (
         <React.Suspense fallback={<div>Loading certificate...</div>}>
@@ -18,7 +20,7 @@ function CertificateContent() {
     // Dynamic data from URL or defaults
     const courseName = searchParams.get("course") || "Introduction to Python";
     const studentName = searchParams.get("student") || "Alex Student";
-    const date = new Date().toLocaleDateString('en-US', { day: 'numeric', month: 'long', year: 'numeric' });
+    const date = formatDate(new Date());
 
     return (
         <div className="min-h-screen bg-zinc-900 flex items-center justify-center p-8 print:block print:p-0 print:m-0 print:bg-white print:overflow-hidden">

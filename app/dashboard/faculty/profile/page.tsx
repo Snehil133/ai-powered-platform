@@ -18,7 +18,7 @@ export default function FacultyProfile() {
         phone: "+1 (555) 123-4567",
         email: "faculty.mem@college.edu", // Read only
         photoUrl: "https://api.dicebear.com/7.x/avataaars/svg?seed=Faculty", // Mock avatar
-        joinDate: "August 2018"
+        joinDate: "01/Aug/2018"
     });
 
     const [isEditingPhone, setIsEditingPhone] = useState(false);

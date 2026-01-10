@@ -4,6 +4,7 @@ import React from "react";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Video, Calendar, Clock, Users } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { formatDate } from "@/lib/utils";
 
 export default function LiveClassesPage() {
     const router = useRouter();
@@ -17,7 +18,7 @@ export default function LiveClassesPage() {
 
     // Format date string
     const timeString = currentTime ? currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "--:--";
-    const dateString = currentTime ? currentTime.toLocaleDateString([], { weekday: 'long', month: 'short', day: 'numeric' }) : "---";
+    const dateString = currentTime ? formatDate(currentTime) : "---";
 
     return (
         <DashboardLayout>

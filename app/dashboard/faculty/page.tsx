@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
 import {
     Users, FileBarChart2, Search, Filter, AlertCircle,
-    Phone, Mail, X, MessageSquare, Send, CheckCircle, Download
+    Phone, Mail, X, MessageSquare, Send, CheckCircle
 } from "lucide-react";
 
 type PerformanceLevel = "Strong" | "Average" | "Weak";
@@ -30,17 +30,17 @@ interface Student {
 const ALL_STUDENTS: Student[] = [
     {
         id: "1", name: "Alex Student", section: "A", attendance: 92, avgScore: 88, performance: "Strong", engagement: "High",
-        email: "alex@example.com", collegeEmail: "alex.st@college.edu", phone: "+91 234 567 8901", parentPhone: "+1 234 567 8902",
+        email: "alex@example.com", collegeEmail: "alex.st@college.edu", phone: "+1 234 567 8901", parentPhone: "+1 234 567 8902",
         course: "Computer Science", year: "2nd", semester: "3rd"
     },
     {
         id: "2", name: "John Doe", section: "A", attendance: 75, avgScore: 62, performance: "Average", engagement: "Medium",
-        email: "john@example.com", collegeEmail: "john.doe@college.edu", phone: "+91 234 567 8903", parentPhone: "+1 234 567 8904",
+        email: "john@example.com", collegeEmail: "john.doe@college.edu", phone: "+1 234 567 8903", parentPhone: "+1 234 567 8904",
         course: "Computer Science", year: "2nd", semester: "3rd"
     },
     {
         id: "3", name: "Jane Smith", section: "A", attendance: 45, avgScore: 35, performance: "Weak", engagement: "Low",
-        email: "jane@example.com", collegeEmail: "jane.smith@college.edu", phone: "+91 234 567 8905", parentPhone: "+1 234 567 8906",
+        email: "jane@example.com", collegeEmail: "jane.smith@college.edu", phone: "+1 234 567 8905", parentPhone: "+1 234 567 8906",
         course: "Computer Science", year: "2nd", semester: "3rd"
     },
     {
@@ -78,39 +78,33 @@ export default function FacultyDashboard() {
     }, []);
 
     const sendMessage = (target: 'student' | 'parent' | 'both') => {
-        // Mock send
-        alert(`Message sent to ${target} for ${messagingStudent?.name}:\n"${messageText}"`);
+        if (!messagingStudent) return;
+
+        // Store in localStorage for "Live" updates on Parent Dashboard
+        const newFeedback = {
+            id: Date.now(),
+            studentId: messagingStudent.id,
+            message: messageText,
+            timestamp: new Date().toISOString(),
+            sender: "Dr. Faculty", // Hardcoded for this view
+            subject: "General Feedback" // Could be dynamic
+        };
+
+        const existing = JSON.parse(localStorage.getItem('student_feedback') || '[]');
+        const updated = [newFeedback, ...existing].slice(0, 10); // Keep last 10
+        localStorage.setItem('student_feedback', JSON.stringify(updated));
+
+        // Dispatch storage event for same-tab updates (if any components listen)
+        window.dispatchEvent(new Event('storage'));
+
+        // Mock send UI feedback
+        alert(`Message sent to ${target} for ${messagingStudent.name}:\n"${messageText}"`);
         setMessagingStudent(null);
         setMessageText("");
     };
 
-    const downloadReport = (type: 'assigned' | 'course') => {
-        // Simulate report generation
-        const date = new Date().toISOString().split('T')[0];
-        const filename = `${type}_students_report_${date}.csv`;
-
-        // Create mock content
-        let content = "Student ID,Name,Course,Status,Attendance\n";
-        filteredStudents.forEach(s => {
-            content += `${s.id},${s.name},${s.course},${s.performance},${s.attendance}%\n`;
-        });
-
-        const blob = new Blob([content], { type: 'text/csv' });
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = filename;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        window.URL.revokeObjectURL(url);
-
-        setShowReportModal(false);
-    };
-
-    const emailReport = (type: 'assigned' | 'course') => {
-        // Simulate email
-        alert(`Report for ${type === 'assigned' ? 'Assigned Students' : 'Course Students'} has been sent to your registered email (faculty@college.edu).`);
+    const generateReport = (type: 'assigned' | 'course') => {
+        alert(`Generating report for ${type === 'assigned' ? 'Assigned Students' : 'Course Students'}...`);
         setShowReportModal(false);
     };
 
@@ -394,67 +388,31 @@ export default function FacultyDashboard() {
             {/* Report Generation Modal */}
             {showReportModal && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in">
-                    <div className="bg-zinc-900 border border-white/10 rounded-2xl max-w-md w-full p-6 shadow-2xl relative">
+                    <div className="bg-zinc-900 border border-white/10 rounded-2xl max-w-sm w-full p-6 shadow-2xl relative text-center">
                         <button onClick={() => setShowReportModal(false)} className="absolute top-4 right-4 text-gray-400 hover:text-white">
                             <X size={20} />
                         </button>
-
-                        <div className="text-center mb-6">
-                            <div className="mx-auto w-12 h-12 bg-zinc-800 rounded-full flex items-center justify-center text-white mb-4">
-                                <FileBarChart2 size={24} />
-                            </div>
-                            <h3 className="text-xl font-bold text-white mb-2">Generate Report</h3>
-                            <p className="text-gray-400 text-sm">Choose how you would like to receive the report.</p>
+                        <div className="mx-auto w-12 h-12 bg-zinc-800 rounded-full flex items-center justify-center text-white mb-4">
+                            <FileBarChart2 size={24} />
                         </div>
+                        <h3 className="text-xl font-bold text-white mb-2">Generate Report</h3>
+                        <p className="text-gray-400 text-sm mb-6">Select the scope for your report.</p>
 
-                        <div className="space-y-4">
-                            {/* Assigned Students */}
-                            <div className="bg-zinc-950/50 p-4 rounded-xl border border-white/5">
-                                <div className="flex items-center justify-between mb-3">
-                                    <span className="font-medium text-white">Assigned Students Report</span>
-                                    <span className="text-xs bg-zinc-800 text-gray-400 px-2 py-1 rounded">Section A</span>
-                                </div>
-                                <div className="grid grid-cols-2 gap-3">
-                                    <button
-                                        onClick={() => downloadReport('assigned')}
-                                        className="flex items-center justify-center gap-2 py-2 px-3 bg-zinc-800 hover:bg-zinc-700 text-white text-sm rounded-lg transition-colors border border-white/5 group"
-                                    >
-                                        <Download size={16} className="text-emerald-400 group-hover:scale-110 transition-transform" />
-                                        Download
-                                    </button>
-                                    <button
-                                        onClick={() => emailReport('assigned')}
-                                        className="flex items-center justify-center gap-2 py-2 px-3 bg-zinc-800 hover:bg-zinc-700 text-white text-sm rounded-lg transition-colors border border-white/5 group"
-                                    >
-                                        <Mail size={16} className="text-blue-400 group-hover:scale-110 transition-transform" />
-                                        Email
-                                    </button>
-                                </div>
-                            </div>
-
-                            {/* Course Students */}
-                            <div className="bg-zinc-950/50 p-4 rounded-xl border border-white/5">
-                                <div className="flex items-center justify-between mb-3">
-                                    <span className="font-medium text-white">Course Students Report</span>
-                                    <span className="text-xs bg-zinc-800 text-gray-400 px-2 py-1 rounded">All Sections</span>
-                                </div>
-                                <div className="grid grid-cols-2 gap-3">
-                                    <button
-                                        onClick={() => downloadReport('course')}
-                                        className="flex items-center justify-center gap-2 py-2 px-3 bg-zinc-800 hover:bg-zinc-700 text-white text-sm rounded-lg transition-colors border border-white/5 group"
-                                    >
-                                        <Download size={16} className="text-emerald-400 group-hover:scale-110 transition-transform" />
-                                        Download
-                                    </button>
-                                    <button
-                                        onClick={() => emailReport('course')}
-                                        className="flex items-center justify-center gap-2 py-2 px-3 bg-zinc-800 hover:bg-zinc-700 text-white text-sm rounded-lg transition-colors border border-white/5 group"
-                                    >
-                                        <Mail size={16} className="text-blue-400 group-hover:scale-110 transition-transform" />
-                                        Email
-                                    </button>
-                                </div>
-                            </div>
+                        <div className="space-y-3">
+                            <button
+                                onClick={() => generateReport('assigned')}
+                                className="w-full py-3 px-4 bg-zinc-800 hover:bg-zinc-700 text-white rounded-xl flex items-center justify-between group transition-colors"
+                            >
+                                <span>Assigned Students</span>
+                                <CheckCircle size={16} className="text-zinc-600 group-hover:text-white transition-colors" />
+                            </button>
+                            <button
+                                onClick={() => generateReport('course')}
+                                className="w-full py-3 px-4 bg-zinc-800 hover:bg-zinc-700 text-white rounded-xl flex items-center justify-between group transition-colors"
+                            >
+                                <span>Course Students</span>
+                                <CheckCircle size={16} className="text-zinc-600 group-hover:text-white transition-colors" />
+                            </button>
                         </div>
                     </div>
                 </div>
