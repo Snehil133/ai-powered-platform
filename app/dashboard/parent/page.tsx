@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, Suspense } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
 import {
     Activity, BookOpen, AlertCircle, CalendarCheck, CreditCard,
@@ -14,7 +14,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 type Tab = "overview" | "attendance" | "fees" | "results" | "contact";
 
 
-export default function ParentDashboard() {
+function ParentDashboardContent() {
     const searchParams = useSearchParams();
     const activeTab = (searchParams.get('view') as Tab) || "overview";
 
@@ -33,6 +33,14 @@ export default function ParentDashboard() {
                 {activeTab === "contact" && <ContactView />}
             </div>
         </DashboardLayout>
+    );
+}
+
+export default function ParentDashboard() {
+    return (
+        <Suspense fallback={<div className="min-h-screen bg-black flex items-center justify-center text-white">Loading Parent Portal...</div>}>
+            <ParentDashboardContent />
+        </Suspense>
     );
 }
 

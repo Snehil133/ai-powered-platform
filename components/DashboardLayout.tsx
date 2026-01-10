@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
 import { useAuth } from "@/components/AuthContext";
 import { LayoutDashboard, LogOut, GraduationCap, Video, MessageSquare, CalendarCheck, Menu, X, Users, Calendar, UserCircle, Activity, CreditCard, Mail } from "lucide-react";
@@ -32,7 +32,7 @@ const ShieldAlertIcon = ({ size }: { size: number }) => (
     <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="#ef4444" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10" /><path d="M12 8v4" /><path d="M12 16h.01" /></svg>
 );
 
-export default function DashboardLayout({ children }: { children: React.ReactNode }) {
+function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
     const { user, logout, isLoading } = useAuth();
     const router = useRouter();
     const pathname = usePathname();
@@ -322,5 +322,15 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 </div>
             </main>
         </div>
+    );
+}
+
+export default function DashboardLayout({ children }: { children: React.ReactNode }) {
+    return (
+        <Suspense fallback={<div className="min-h-screen bg-black flex items-center justify-center text-white">Loading...</div>}>
+            <DashboardLayoutContent>
+                {children}
+            </DashboardLayoutContent>
+        </Suspense>
     );
 }
